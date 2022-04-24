@@ -8,6 +8,9 @@ from sklearn.model_selection import train_test_split
 
 def objective(trial: optuna.Trial):
     df = pd.read_csv("../input/tcc/final_data.csv")
+    
+    for i in range(5):
+        df[f"f{i}"] = pd.cut(df[f"f{i}"], bins=5).codes
 
     train_x, test_x, train_y, test_y = train_test_split(
         df.drop(columns="target"), df["target"], test_size=0.2

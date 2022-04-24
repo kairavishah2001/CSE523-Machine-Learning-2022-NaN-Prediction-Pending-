@@ -14,7 +14,9 @@ CV_RESULT_DIR = "./xgboost_cv_results"
 
 
 def objective(trial):
-    (data, target) = sklearn.datasets.load_breast_cancer(return_X_y=True)
+    df = pd.read_csv("../input/tcc/final_data.csv")
+    data = df.delete(columns = "target")
+    target = df["target"]
     dtrain = xgb.DMatrix(data, label=target)
 
     param = {

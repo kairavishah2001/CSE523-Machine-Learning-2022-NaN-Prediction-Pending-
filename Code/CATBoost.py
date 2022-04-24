@@ -1,26 +1,31 @@
 import numpy as np
 import optuna
+import pandas as pd
 
 import catboost as cb
-from sklearn.datasets import load_breast_cancer
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import train_test_split
 
 
 def objective(trial):
-    data, target = load_breast_cancer(return_X_y=True)
+    df = pd.read_csv("../input/tcc/final_data.csv")
+    data = df.delete(columns = "target")
+    target = df["target"]
     train_x, valid_x, train_y, valid_y = train_test_split(data, target, test_size=0.3)
 
     param = {
-        "metric": "auc",
-        "objective": "binary",
-        "reg_alpha": trial.suggest_float("reg_alpha", 1e-8, 10.0, log=True),
-        "reg_lambda": trial.suggest_float("reg_lambda", 1e-8, 10.0, log=True),
-        "n_estimators": trial.suggest_int("n_estimators", 1, 100),
-        "num_leaves": trial.suggest_int("num_leaves", 2, 256),
-        "feature_fraction": trial.suggest_float("feature_fraction", 0.4, 1.0),
-        "bagging_fraction": trial.suggest_float("bagging_fraction", 0.4, 1.0),
-        "min_child_samples": trial.suggest_int("min_child_samples", 5, 100),
+        "objective": trial.suggest_categorical(
+            "objective", ["Logloss", "CrossEntropy"]
+        ),
+        "colsample_bylevel": trial.suggest_float("colsample_bylevel", 0.01, 0.1),
+        "depth": trial.suggest_int("depth", 1, 12),
+        "boosting_type": trial.suggest_categorical(
+            "boosting_type", ["Ordered", "Plain"]
+        ),
+        "bootstrap_type": trial.suggest_categorical(
+            "bootstrap_type", ["Bayesian", "Bernoulli", "MVS"]
+        ),
+        "used_ram_limit": "3gb",
     }
 
     if param["bootstrap_type"] == "Bayesian":
@@ -40,7 +45,7 @@ def objective(trial):
 
     preds = gbm.predict(valid_x)
     pred_labels = np.rint(preds)
-    accuracy = accuracy_score(valid_y, pred_labels)
+    accuracy = roc_auc_score(valid_y, pred_labels)
     return accuracy
 
 
