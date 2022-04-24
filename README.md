@@ -16,7 +16,7 @@ For various algorithms, results are generated in a graphical form. Please have a
 
 ### Results
 #### Here is the table which states the AUC score for different eigen values and the amount of time taken by the model to get trained
-![](Results/results.png)
+![](Results/Results_table.png)
 ## References
 
 - “Toxic comment classification challenge,” Kaggle. [Online]. Available: https://www.kaggle.com/c/jigsaw-toxic-comment-classification- challenge/data. [Accessed: 20-Mar-2022]. 
