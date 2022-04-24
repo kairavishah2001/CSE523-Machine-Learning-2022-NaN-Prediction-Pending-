@@ -12,14 +12,15 @@ def objective(trial):
     train_x, valid_x, train_y, valid_y = train_test_split(data, target, test_size=0.3)
 
     param = {
-        "objective": trial.suggest_categorical("objective", ["Logloss", "CrossEntropy"]),
-        "colsample_bylevel": trial.suggest_float("colsample_bylevel", 0.01, 0.1),
-        "depth": trial.suggest_int("depth", 1, 12),
-        "boosting_type": trial.suggest_categorical("boosting_type", ["Ordered", "Plain"]),
-        "bootstrap_type": trial.suggest_categorical(
-            "bootstrap_type", ["Bayesian", "Bernoulli", "MVS"]
-        ),
-        "used_ram_limit": "3gb",
+        "metric": "auc",
+        "objective": "binary",
+        "reg_alpha": trial.suggest_float("reg_alpha", 1e-8, 10.0, log=True),
+        "reg_lambda": trial.suggest_float("reg_lambda", 1e-8, 10.0, log=True),
+        "n_estimators": trial.suggest_int("n_estimators", 1, 100),
+        "num_leaves": trial.suggest_int("num_leaves", 2, 256),
+        "feature_fraction": trial.suggest_float("feature_fraction", 0.4, 1.0),
+        "bagging_fraction": trial.suggest_float("bagging_fraction", 0.4, 1.0),
+        "min_child_samples": trial.suggest_int("min_child_samples", 5, 100),
     }
 
     if param["bootstrap_type"] == "Bayesian":
@@ -29,7 +30,13 @@ def objective(trial):
 
     gbm = cb.CatBoostClassifier(**param)
 
-    gbm.fit(train_x, train_y, eval_set=[(valid_x, valid_y)], verbose=0, early_stopping_rounds=100)
+    gbm.fit(
+        train_x,
+        train_y,
+        eval_set=[(valid_x, valid_y)],
+        verbose=0,
+        early_stopping_rounds=100,
+    )
 
     preds = gbm.predict(valid_x)
     pred_labels = np.rint(preds)

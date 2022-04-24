@@ -1,34 +1,44 @@
+import optuna
 import optuna.integration.lightgbm as lgb
+import pandas as pd
+from lightgbm import early_stopping, log_evaluation
+from sklearn.metrics import roc_auc_score
+from sklearn.model_selection import train_test_split
 
-from lightgbm import early_stopping
-from lightgbm import log_evaluation
-import sklearn.datasets
-from sklearn.model_selection import KFold
 
+def objective(trial: optuna.Trial):
+    df = pd.read_csv("../input/tcc/final_data.csv")
 
-if __name__ == "__main__":
-    data, target = sklearn.datasets.load_breast_cancer(return_X_y=True)
-    dtrain = lgb.Dataset(data, label=target)
+    train_x, test_x, train_y, test_y = train_test_split(
+        df.drop(columns="target"), df["target"], test_size=0.2
+    )
 
     params = {
+        "metric": "auc",
         "objective": "binary",
-        "metric": "binary_logloss",
-        "verbosity": -1,
-        "boosting_type": "gbdt",
+        "reg_alpha": trial.suggest_float("reg_alpha", 1e-8, 10.0, log=True),
+        "reg_lambda": trial.suggest_float("reg_lambda", 1e-8, 10.0, log=True),
+        "n_estimators": trial.suggest_int("n_estimators", 1, 100),
+        "num_leaves": trial.suggest_int("num_leaves", 2, 256),
+        "feature_fraction": trial.suggest_float("feature_fraction", 0.4, 1.0),
+        "bagging_fraction": trial.suggest_float("bagging_fraction", 0.4, 1.0),
+        "min_child_samples": trial.suggest_int("min_child_samples", 5, 100),
     }
 
-    tuner = lgb.LightGBMTunerCV(
+    dtrain = lgb.Dataset(train_x, label=train_y)
+    dval = lgb.Dataset(test_x, label=test_y)
+
+    model = lgb.train(
         params,
         dtrain,
-        folds=KFold(n_splits=3),
+        valid_sets=[dtrain, dval],
         callbacks=[early_stopping(100), log_evaluation(100)],
     )
 
-    tuner.run()
+    prediction = model.predict(test_x, num_iteration=model.best_iteration)
+    return roc_auc_score(test_y, prediction)
 
-    print("Best score:", tuner.best_score)
-    best_params = tuner.best_params
-    print("Best params:", best_params)
-    print("  Params: ")
-    for key, value in best_params.items():
-        print("    {}: {}".format(key, value))
+
+study = optuna.create_study()
+study.optimize(objective, n_jobs=-1, n_trials=100)
+print(study.best_params)

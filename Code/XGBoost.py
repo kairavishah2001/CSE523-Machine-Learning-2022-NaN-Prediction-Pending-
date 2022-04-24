@@ -18,16 +18,15 @@ def objective(trial):
     dtrain = xgb.DMatrix(data, label=target)
 
     param = {
-        "verbosity": 0,
-        "objective": "binary:logistic",
-        "eval_metric": "auc",
-        "booster": trial.suggest_categorical("booster", ["gbtree", "gblinear", "dart"]),
-        "lambda": trial.suggest_float("lambda", 1e-8, 1.0, log=True),
-        "alpha": trial.suggest_float("alpha", 1e-8, 1.0, log=True),
-        # sampling ratio for training data.
-        "subsample": trial.suggest_float("subsample", 0.2, 1.0),
-        # sampling according to each tree.
-        "colsample_bytree": trial.suggest_float("colsample_bytree", 0.2, 1.0),
+        "metric": "auc",
+        "objective": "binary",
+        "reg_alpha": trial.suggest_float("reg_alpha", 1e-8, 10.0, log=True),
+        "reg_lambda": trial.suggest_float("reg_lambda", 1e-8, 10.0, log=True),
+        "n_estimators": trial.suggest_int("n_estimators", 1, 100),
+        "num_leaves": trial.suggest_int("num_leaves", 2, 256),
+        "feature_fraction": trial.suggest_float("feature_fraction", 0.4, 1.0),
+        "bagging_fraction": trial.suggest_float("bagging_fraction", 0.4, 1.0),
+        "min_child_samples": trial.suggest_int("min_child_samples", 5, 100),
     }
 
     if param["booster"] == "gbtree" or param["booster"] == "dart":
