@@ -5,10 +5,10 @@
 ## Introduction
 Considering to moderate countless inappropriate or toxic comments on social media manually is a serious impractical approach. Thus, in our project, we implement this using and comparing various ML models. The data is downloaded from Kaggle[1], containing 1.5 million comments from wikipedia’s talk page and has to be implemented with multiclass-classification - toxic, obscene, identity hate, severe, etc. For the complete process till choosing the best model, we implement text vectorization, tf-idf calculations and basic use of linear algebra to get the reduced dimension of the vector form of out input. We then apply ML models like XGBoost, LGBM, CatBoost, etc. Models are tuned to give optimal test results. We infer that LGBM outperforms the other models. We would be discussing more about how we reached to this conclusion in later sections.
 
-## Results
+## Fine Tuning
 For various algorithms, results are generated in a graphical form. Please have a look at the [report](https://github.com/kairavishah2001/CSE523-Machine-Learning-2022-NaN-Prediction-Pending-/blob/main/Reports/Group13_NaN_Predicting_Pending_End_Sem_Project_Report%205.43.56%20PM.pdf).
 
-### Fine Tuning
+### AUC Curve
 
 ##### Here is the Graph of AUC verus number of eigen values for Gradient Boosting Models used in our project (CatBoost, XGBoost and LGBM)
 
@@ -16,9 +16,7 @@ For various algorithms, results are generated in a graphical form. Please have a
 
 ### Results
 #### Here is the table which states the AUC score for different eigen values and the amount of time taken by the model to get trained
-
 ![](Results/results.png)
-
 ## References
 
 - “Toxic comment classification challenge,” Kaggle. [Online]. Available: https://www.kaggle.com/c/jigsaw-toxic-comment-classification- challenge/data. [Accessed: 20-Mar-2022]. 
